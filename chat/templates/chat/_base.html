@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title%}Home{% endblock %} | Django Chat</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="{% static 'chat/assets/jquery-3.7.1.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script>
+        $j = new jQuery.noConflict();
+    </script>
+
+    <style>
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        .main-container {
+            height:100vh;
+            padding:0;
+            margin:0;
+            display:flex;            
+        }
+
+        .cp-room-row {
+            height:100vh;
+        }
+
+        .cp-room-row > * {
+            height:100%;
+            border:1px solid grey;
+        }
+
+        .cp-room-top-navigation , .cp-room-bottom-message-area {
+            height:60px;
+        }
+
+        .cp-room-chat-area {
+            overflow-y: scroll;
+            height:calc(100% - 120px)
+        }
+
+                    /* Add this CSS to your existing stylesheet or create a new one */
+        .cp-room-chat-area::-webkit-scrollbar {
+            width: 5px; /* Set the width of the scrollbar */
+        }
+
+        .cp-room-chat-area::-webkit-scrollbar-thumb {
+            background-color: #6c757d; /* Set the color of the scrollbar thumb */
+            border-radius: 10px; /* Set the border radius of the thumb */
+        }
+
+        .cp-room-chat-area::-webkit-scrollbar-track {
+            background-color: #f8f9fa; /* Set the color of the scrollbar track */
+            border-radius: 10px; /* Set the border radius of the track */
+        }
+
+        .cp-room-chat-area::-webkit-scrollbar-thumb:hover {
+            background-color: #495057; /* Set the color of the scrollbar thumb on hover */
+        }
+
+        .cp-room-chat-area::-webkit-scrollbar-thumb:active {
+            background-color: #343a40; /* Set the color of the scrollbar thumb on click */
+        }
+
+        .cp-room-chat {
+            max-width:50%;
+            width:fit-content ;
+            height:fit-content
+        }
+
+    
+
+        .cp-home-container .cp-home-search-suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .cp-home-container .cp-home-search-suggestion-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .cp-home-container .cp-home-left-nav {
+            height:50px
+        }
+
+        /* left content area */
+        .cp-home-container .cp-home-left-content-area {
+            height:calc(100vh - 50px);
+            overflow-y: scroll;
+        }
+
+        .cp-home-container .cp-home-left-content-area::-webkit-scrollbar ,.cp-home-chatroom-chatarea::-webkit-scrollbar  {
+            width:2px
+        }
+
+        .cp-home-container .cp-home-left-content-area::-webkit-scrollbar-track , .cp-home-chatroom-chatarea::-webkit-scrollbar-track{
+            background-color: transparent
+        }
+        .cp-home-container .cp-home-left-content-area::-webkit-scrollbar-thumb , .cp-home-chatroom-chatarea::-webkit-scrollbar-thumb{
+            background-color: #b4b7ba;
+        }
+
+
+
+        
+
+        .cp-home-search-guide-icons {
+            background: #b4b7ba;
+            position: absolute;
+            left:0;
+            height:100%;
+            padding-left:5px;
+            padding-right:5px;
+            border-radius: 5px 0 0 5px;
+            cursor: pointer;
+            width:30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+/** home page styles */
+        .cp-home-row {
+            height:100vh
+        }
+
+        .cp-home-left-bar {
+            border-right: 1px solid grey;
+        }
+        .cp-home-search-box-container {
+            width:calc(100% - 60px);
+            position:relative;
+        }
+        .cp-home-search-input {
+            padding-left:30px
+        }
+
+        .cp-hide {
+            display:none
+        }
+
+        /** Right Chat Room */
+        
+
+        .cp-home-chatroom-top-navigation {
+            height:50px;
+        }
+
+        .cp-home-chatroom-bottom-message-area {
+            height:40px
+        }
+
+        .cp-home-chatroom-chatarea {
+            height:calc(100% - 100px);
+            overflow-y: scroll;
+        }
+
+    </style>
+</head>
+<body class="m-0 p-0">
+    {% block content %}
+
+    {% endblock content %}
+
+<script>  
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+
+<script src="{% static 'chat/Search.js' %}?v=8"></script>
+<script src="{% static 'chat/ChatManager.js' %}?v=12"></script>
+
+{% block localjs %}
+{% endblock %}
+</body>
+</html>

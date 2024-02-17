@@ -1,0 +1,33 @@
+{% extends 'core/_base.html' %}
+
+{% block title %}Login{%endblock%}
+
+{% block content %}
+      <div class="container-fluid">
+            <div class="row justify-content-center">
+                  <div class="form-container col-md-6 col-lg-4">
+                        <h2>Sign Up</h2>
+                        <form action="" method="post">
+                              {% csrf_token%}
+                              <div class="mb-3">
+                                    <label for="username" class="form-label">Username</label>
+                                    <input type="text" name='username' class="form-control" id="username" aria-describedby="">
+                                    <div id="usernameHelp" class="form-text">{{form.username.errors}}</div>
+                              </div>
+                              <div class="mb-3">
+                                    <label for="password1" class="form-label">Password</label>
+                                    <input type="password" name="password1" class="form-control" id="password1">
+                                    <div id="password2Help" class="form-text">{{form.password1.errors}}</div>
+                              </div>
+                              <div class="mb-3">
+                                <label for="password2" class="form-label">Repeat Password</label>
+                                <input type="password" name="password2" class="form-control" id="password2">
+                                <div id="password2Help" class="form-text">{{form.password2.errors}}</div>
+                              </div>
+                              <button type="submit" class="btn btn-primary">Submit</button>
+                              <div class="mb-3">Already have an account ? <a href="{% url 'core:login' %}" class="text-decoration-none">login</a></div>
+                        </form>
+                  </div>
+            </div>
+      </div>
+{% endblock %}

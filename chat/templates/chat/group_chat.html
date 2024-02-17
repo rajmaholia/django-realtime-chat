@@ -1,0 +1,96 @@
+{% extends 'chat/_base.html' %}
+
+{% block title %}{{room.name}}{% endblock %}
+
+{% block content %} 
+<div class="container-fluid cp-room-container">
+    <div class="row cp-room-row">
+        <div class="col-md-4 col-sm-2 cp-room-receipent-list d-none d-sm-block pt-3">
+            <div class="list-group">
+                {% for room in group_rooms %}
+                    <a href="{% url 'chat:group_room' room.id %}" class="list-group-item list-group-item-action">{{room.name}}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-8 col-sm-10 cp-room-chat-area-container p-0 h-100">
+            <!-- top nav-->
+            <nav class="cp-room-top-navigation navbar bg-primary px-1 navbar-light m-0">
+                <a href="#"  class="navbar-brand">{{room.name}}</a>
+            </nav>
+
+            <div class="cp-room-chat-area row m-0 ">
+                    {% for message in messages %}
+                        {% with sender=message.sender.username receiver=user.username %}
+                    <div class="d-flex {% if sender == receiver %}justify-content-end{% endif %}">
+                        <div class="cp-room-chat card mb-1 {% if receiver == sender %}bg-primary text-white{% else %}text-dark{% endif %}">
+                            {% if sender != receiver %}
+                            <a href="{% url 'chat:private_room' message.sender.id %}" class="card-header text-decoration-none p-0 border-0 bg-transparent text-muted m-0" style="font-size: 12px;">
+                                {{ message.sender.username }}
+                            </a>
+                            {% endif %}
+                            <div class="card-body px-1 p-0 m-0 cp-room-chat-message">
+                                {{ message.content }}
+                            </div>
+                        </div>
+                    </div>
+                        {% endwith %}
+                    {% endfor %}
+            </div>
+    
+            <div class="cp-room-bottom-message-area d-flex align-items-center m-0">
+                <div class="input-group p-1">
+                    <input type="text" name="message" class="form-control" id="cpRoomMessage">
+                    <button class="btn btn-primary" id="cpRoomMessageSend">Send</button>
+                </div>
+            </div>
+    
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block localjs %}
+{{ room.name|json_script:"json_roomname" }}
+{{ room.id|json_script:"json_roomid" }}
+{{ request.user.username|json_script:"json_username" }}
+
+<script>
+
+    let roomId = JSON.parse(document.getElementById('json_roomid').textContent);
+    let roomName = JSON.parse(document.getElementById('json_roomname').textContent);
+    let username = JSON.parse(document.getElementById('json_username').textContent);
+    let chatArea = document.querySelector('.cp-room-chat-area');
+    let messageInputEl = document.querySelector('#cpRoomMessage');
+    let messageSendBtn = document.querySelector('#cpRoomMessageSend');
+
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+   
+    try {
+        const chatSocket = ChatManager.init(
+            {
+                roomId:roomId,
+                username:username,
+                chatArea:chatArea,
+                roomName:roomName,
+                url:`ws://${window.location.host}/group/${roomId}/`
+            }
+        );
+        
+
+        messageSendBtn.addEventListener('click', function () {
+            let message = messageInputEl.value;
+            if (message.trim().length !== 0) {
+                ChatManager.send({
+                    message: message
+                });
+                messageInputEl.value = '';
+            }
+        });
+
+    } catch (error) {
+        //console.error(`WebSocket Initialization Error: ${error}`);
+    }
+</script>
+{% endblock localjs %}

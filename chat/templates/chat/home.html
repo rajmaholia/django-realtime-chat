@@ -1,0 +1,42 @@
+{% extends 'chat/_base.html' %}
+{% load static %}
+{% block title %} Welcome {% endblock %}
+
+{% block content %}
+<div class="container-fluid cp-home-container p-0 m-0">
+    <div class="row cp-home-row p-0 m-0">
+        <div class="col-md-5 col-sm-8 h-100 cp-home-left-bar p-0 m-0">
+            <nav class="navbar bg-primary p-1 m-0 cp-home-left-nav">
+                <a href="{% url 'chat:settings' %}" class="navbar-brand rounded-circle p-0 d-flex align-items-center " style="width:30px;height:30px;overflow:hidden">
+                    <img src="{{user.chatuser.profile_photo.url}}" alt="img" style='object-fit:fill' class="img-fluid m-0 p-0 w-100 ">
+                </a>
+                <div class="cp-home-search-box-container d-flex">
+                    <button class="cp-home-search-guide-icons p-0 border-0">
+                        <i class="fa-solid fa-magnifying-glass cp-home-search-focus-icon"></i>
+                        <i class="fa-solid cp-hide fa-arrow-left cp-home-search-cancel-icon"></i>
+                    </button>
+                    <input type="text" class="form-control cp-home-search-input" id="cpHomeSearchInput" placeholder="search here ...">
+                </div>
+            </nav>
+            
+            <div class="cp-home-left-content-area">
+                <div class="cp-home-user-and-group-list-container p-0 m-0">
+                
+                </div>
+                <div class="cp-hide cp-home-search-results-container">
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container">
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block localjs %}
+{{user.username|json_script:'json_username'}}
+<!-- Include this script in your HTML template -->
+<script src="{% static 'chat/home.js' %}?v=5"></script>
+{%endblock localjs %}

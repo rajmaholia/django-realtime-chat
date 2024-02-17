@@ -1,0 +1,50 @@
+** Project Directory ** 
+D:\Coding\Python\chat_project\chat (app)
+D:\Coding\Python\chat_project\core (apps)
+D:\Coding\Python\chat_project\db.sqlite3
+D:\Coding\Python\chat_project\django_chat (project)
+D:\Coding\Python\chat_project\manage.py
+
+**chat app**
+D:\Coding\Python\chat_project\chat\admin.py
+D:\Coding\Python\chat_project\chat\apps.py
+D:\Coding\Python\chat_project\chat\consumers.py
+D:\Coding\Python\chat_project\chat\migrations
+D:\Coding\Python\chat_project\chat\models.py
+D:\Coding\Python\chat_project\chat\routing.py
+D:\Coding\Python\chat_project\chat\templates
+D:\Coding\Python\chat_project\chat\tests.py
+D:\Coding\Python\chat_project\chat\urls.py
+D:\Coding\Python\chat_project\chat\views.py
+D:\Coding\Python\chat_project\chat\__init__.py
+
+
+D:\Coding\Python\chat_project\chat\templates\chat
+D:\Coding\Python\chat_project\chat\templates\chat\home.html
+D:\Coding\Python\chat_project\chat\templates\chat\room.html
+D:\Coding\Python\chat_project\chat\templates\chat\_base.html
+
+
+**core app**
+D:\Coding\Python\chat_project\core\admin.py
+D:\Coding\Python\chat_project\core\apps.py
+D:\Coding\Python\chat_project\core\forms.py
+D:\Coding\Python\chat_project\core\migrations
+D:\Coding\Python\chat_project\core\models.py
+D:\Coding\Python\chat_project\core\templates
+D:\Coding\Python\chat_project\core\tests.py
+D:\Coding\Python\chat_project\core\urls.py
+D:\Coding\Python\chat_project\core\views.py
+D:\Coding\Python\chat_project\core\__init__.py
+
+D:\Coding\Python\chat_project\core\templates\core
+D:\Coding\Python\chat_project\core\templates\core\login.html
+D:\Coding\Python\chat_project\core\templates\core\signup.html
+D:\Coding\Python\chat_project\core\templates\core\_base.html
+
+** project**
+D:\Coding\Python\chat_project\django_chat\asgi.py
+D:\Coding\Python\chat_project\django_chat\settings.py
+D:\Coding\Python\chat_project\django_chat\urls.py
+D:\Coding\Python\chat_project\django_chat\wsgi.py
+D:\Coding\Python\chat_project\django_chat\__init__.py
