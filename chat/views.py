@@ -97,7 +97,6 @@ def get_my_rooms(request):
 @login_required
 def get_private_chat(request,user_id):
     try:
-        print(user_id)
         user2 = User.objects.get(id=user_id)
 
         room = get_private_room(request.user, user2)

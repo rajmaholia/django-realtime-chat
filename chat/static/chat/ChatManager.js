@@ -18,7 +18,6 @@ class ChatManager {
             try {
                 const chatSocket = new WebSocket(url);
                 ChatManager.chatSocket = chatSocket;
-
                 chatSocket.onmessage = ChatManager.onMessage;
                 chatSocket.onclose = ChatManager.onClose;
                 chatSocket.onerror = ChatManager.onError;
@@ -93,7 +92,7 @@ class ChatManager {
 
 
     static onError(error){
-
+        console.log(error)
     }
 
     /**

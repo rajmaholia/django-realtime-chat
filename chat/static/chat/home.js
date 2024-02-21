@@ -35,9 +35,10 @@ class ChatArea {
 
                         let link = (room_type == 'user') ? `/profile/${username}/` : `/group/${data.room_id}/detail/`;
                         let $chatContent = $j(` 
-                                        <div class="p-0 m-0 h-100">                      
-                                            <nav class="cp-home-chatroom-top-navigation bg-primary px-1 navbar-light m-0 d-flex align-items-center">
-                                                <a href="${link}" class="navbar-brand rounded-circle p-0 d-flex align-items-center " style="width:30px;height:30px;overflow:hidden">
+                                        <div class="p-0 m-0 h-100" style="background-image:url('/static/chat/assets/images/chatroom-background.jpg');background-size:cover;">                      
+                                            <nav class="cp-home-chatroom-top-navigation bg-primary px-1 m-0 d-flex align-items-center">
+                                                <button class="btn btn-primary cp-home-chatroom-top-navigation__btn-back d-sm-none"><i class="fa-solid fa-arrow-left"></i></button>
+                                                <a href="${link}" class="rounded-circle p-0 d-flex align-items-center " style="width:30px;height:30px;overflow:hidden">
                                                         <img src="${photo}" alt="img" style='object-fit:fill' class="img-fluid m-0 p-0 w-100 ">
                                                 </a>
                                                 <div class=''>${name}</div>
@@ -78,6 +79,7 @@ class ChatArea {
 
                         //insert chatroom in the page 
                         $container.append($chatContent);
+                        $container[0].classList.add('cp-place-left-on-sm');
                     
                         //scroll chats to the bottom .
                         $chatarea[0].scrollTop = $chatarea[0].scrollHeight;
@@ -93,9 +95,8 @@ class ChatArea {
                         }
                         
                         if(data.room_id != null) {
-                            let url_suffix = (room_type == 'user') ? `direct/${data.room_id}/` : `group/${data.id}/`;
+                            let url_suffix = (room_type == 'user') ? `direct/${data.room_id}/` : `group/${data.room_id}/`;
                             let url = `ws://${window.location.host}/${url_suffix}`;
-
                             ChatManager.connect(url)
                                 .then(chatSocket => {
                                     ChatArea.activeConnection = chatSocket;
@@ -109,10 +110,16 @@ class ChatArea {
                                     });
                                 })
                                 .catch(error => {
-                                    
+                                    console.log(error)
                                 })
                         }
 
+                        //Back btn 
+                        let $btnBack = $j('.cp-home-chatroom-top-navigation__btn-back');
+                        $btnBack.on('click',function(){
+                            $container[0].classList.remove('cp-place-left-on-sm')
+                        });
+                        
                         //input field and send button 
                         let $input = $container.find('#cpRoomMessage');
                         let $btnSend = $container.find('#cpRoomMessageSend');

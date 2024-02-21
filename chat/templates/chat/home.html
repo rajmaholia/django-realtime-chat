@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container cp-place-left-on-sm">
+        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container">
 
         </div>
     </div>
@@ -68,8 +68,9 @@
 {% endblock %}
 {% block localjs %}
 {{user.username|json_script:'json_username'}}
+
 <!-- Include this script in your HTML template -->
-<script src="{% static 'chat/home.js' %}?v=13"></script>
+<script src="{% static 'chat/home.js' %}?v=25"></script>
 
 <script>
     class ActionCreate {
