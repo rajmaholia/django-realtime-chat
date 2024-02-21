@@ -71,7 +71,7 @@ class Search {
             
             let idRoom = (suggestion.type =='user') ? `data-user-id="${suggestion.id}"` : `data-room-id="${suggestion.id}"`;
 
-            const $suggestionItem = $j(`<div data-room-type="${suggestion.type}"  ${idRoom} class="cp-home-search-suggestion-item" style="display:flex"></div>`);
+            const $suggestionItem = $j(`<div data-room-type="${suggestion.type}"  ${idRoom} class="cp-home-search-suggestion-item" style="display:flex;style="border-bottom:1px solid grey"></div>`);
             
             let photo;
             if(suggestion.type == 'group') {
@@ -86,7 +86,7 @@ class Search {
                         <img src="${photo}" alt="loading.." style="object-fit: cover;width:100%">
                     </figure>
                 </div>
-                <div class="flex-grow-1  " style="border-bottom:1px solid grey">
+                <div class="flex-grow-1">
                     ${suggestion.name}
                 </div>
                 `;
@@ -100,6 +100,7 @@ class Search {
     }//end func displaySuggestions
 
     static onItemClick($suggestionBox){
+            $suggestionBox.off('click');
             $suggestionBox.on('click', '.cp-home-search-suggestion-item', function (e) {
                                  // Your click event logic here
                                 let target = $j(e.currentTarget);

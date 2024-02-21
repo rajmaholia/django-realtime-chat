@@ -26,17 +26,175 @@
                 <div class="cp-hide cp-home-search-results-container">
                 </div>
             </div>
+
+            <!-- bubble icon to create group -->
+            <div class="cp-home-bubble-action-create-group">
+                <i class="fa-solid fa-plus cp-home-bubble-action-create-group__icon"></i>
+            </div>
+
+            <!-- Create Group popup -->
+            <div class=" cp-popup-full cp-home-popup-create-group">
+                <nav class="d-flex align-items-center bg-light cp-home-popup-create-group__nav m-0" style="height:50px">
+                    <button class="btn btn-secondary cp-home-popup-create-group__cancel">
+                        <i class="fa-solid fa-multiply"></i>
+                    </button>
+                    Create new group
+                </nav>
+
+                <div class="cp-home-popup-create-group__groupname m-0" style="height:50px">
+                    <div class="mb-3 p-1">
+                        <label for="groupname" class="form-label visually-hidden">Group name</label> 
+                        <input type="text" id='groupname' class="form-control cp-home-popup-create-group__groupname__input"  placeholder="enter group name ...">   
+                    </div>
+                </div>
+
+                <div class="cp-home-popup-create-group__selectusers m-0 " style="height:calc(100% - 150px)">
+                    <ul class="cp-home-popup-create-group__selectusers__list list-style-none m-0 p-0 h-100" style="overflow-y: scroll;">
+                        
+                    </ul>
+                </div>
+
+                <div class="cp-home-popup-create-group__done m-0" style="height:20px">
+                    <button class="btn btn-primary cp-home-popup-create-group__done_btn">Done</button>
+                </div>
+            </div>
         </div>
 
-        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container">
+        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container cp-place-left-on-sm">
 
         </div>
     </div>
 </div>
 {% endblock %}
-
 {% block localjs %}
 {{user.username|json_script:'json_username'}}
 <!-- Include this script in your HTML template -->
-<script src="{% static 'chat/home.js' %}?v=5"></script>
+<script src="{% static 'chat/home.js' %}?v=13"></script>
+
+<script>
+    class ActionCreate {
+        static $actionBtn = null;
+        static $targetEl = null;
+        static $cancelBtn = null;
+        static $elements;
+        static data = {name:'',selectedMembers:[]};
+
+        static attachEvent() {
+            this.$actionBtn.on('click',function(){
+                ActionCreate.setUp()
+            })
+
+            this.$cancelBtn.on('click',function(){
+                console.log('hello')
+                ActionCreate.hide();
+            });
+
+            this.popUpEvents()
+        }
+
+        static show(){
+            this.$targetEl.css('display','block');
+        }
+
+        static hide() {
+            this.$targetEl.css('display','none');
+        }
+
+        static init($actionBtn, $cancelBtn, $targetEl) {
+            this.$actionBtn = $actionBtn;
+            this.$targetEl = $targetEl;
+            this.$cancelBtn = $cancelBtn;
+            this.hide();
+            this.attachEvent();
+        }
+        static loadList(){
+            this.data.selectedMembers = [];
+            ActionCreate.getMyFriends()
+                .then(data => {
+                    for(const friend of data.friends) {
+                        let $liItem = `<li class="d-flex bg-muted" data-user-id="${friend.user_id}"><span style="width:40px;height:40px;overflow:hidden" class="rounded-circle"><img class='w-100' style="object-fit:cover" src="${friend.profile_photo}"/></span>${friend.username}</li>`;
+                        this.$elements.$userListEl.append($liItem)
+                    }
+                })
+                .catch(error => {
+
+                })
+        }
+
+        static async getMyFriends(){
+            console.log('...')
+            const url = `/api/get_my_friends/`;
+            try {
+                const data = await $j.ajax({
+                    url:url,
+                    method:'GET',
+                    dataType:'json'
+                });
+                return data;
+            } catch(error){
+                throw error
+            }
+        }
+
+        static popUpEvents(){
+            this.$elements.$userListEl.on('click','li', function(e){
+                let target = $j(e.currentTarget);
+                let id = parseInt(target.data('user-id'));
+                
+                if(target[0].classList.contains('selected')) {
+                    target.css('background-color','white');
+                    target[0].classList.remove('selected');
+                    let index = ActionCreate.data.selectedMembers.indexOf(id)
+                    ActionCreate.data.selectedMembers.splice(index , 1)
+                } else {
+                    target.css('background-color','blue');
+                    target[0].classList.add('selected');
+                    ActionCreate.data.selectedMembers.push(id);
+                }
+            });
+
+            this.$elements.$doneBtn.on('click',function(){
+                let $input = ActionCreate.$elements.$groupNameInput;
+                if($input.val().trim().length == 0) {
+                    $input.css('border-color','red')
+                } else {
+                    let members = ActionCreate.data.selectedMembers;
+                    let name = $input.val();
+                    console.log(members)
+                    $j.ajax({
+                            url:'/api/group/create/',
+                            method:'POST',
+                            data:{group_name:name,group_members:members},
+                            success:function(data){
+                                console.log(data)
+                            }
+                        })
+                }
+            })
+
+        }
+
+        static setElements($elements) {
+            this.$elements = $elements;
+        }
+
+        static setUp(){
+            this.show();
+            this.loadList();
+        }
+    }
+
+    let $actionBtn = $j('.cp-home-bubble-action-create-group');
+    let $cancelBtn = $j('.cp-home-popup-create-group__cancel');
+    let $targetEl = $j('.cp-home-popup-create-group');
+    
+    ActionCreate.setElements({
+        $userListEl:$j('.cp-home-popup-create-group__selectusers__list'),
+        $groupNameInput:$j('.cp-home-popup-create-group__groupname__input'),
+        $doneBtn:$j('.cp-home-popup-create-group__done_btn'),
+    });
+    ActionCreate.init($actionBtn,$cancelBtn,$targetEl)
+    
+</script>
+
 {%endblock localjs %}

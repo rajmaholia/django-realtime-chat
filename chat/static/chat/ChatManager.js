@@ -6,24 +6,32 @@ class ChatManager {
     static chatSocket = null;
     static privateRoom = false;
     
+
     /**
-     * Creates a connection to the websocket and handles onmessage,onclose and onerror events . 
-     * 
-     * @param {string} url - websocket url for chat room.
-     * @returns {WebSocket} - Returns websocket connection Object.
+     * Creates a connection to the WebSocket and handles onmessage, onclose, and onerror events.
+     *
+     * @param {string} url - WebSocket URL for the chat room.
+     * @returns {Promise<WebSocket>} - Returns a promise resolving to the WebSocket connection object.
      */
-    static connect(url){
-        try {
-            const chatSocket = new WebSocket(url);
-            ChatManager.chatSocket = chatSocket;
-            
-            chatSocket.onmessage = ChatManager.onMessage;
-            chatSocket.onclose = ChatManager.onClose;
-            chatSocket.onerror = ChatManager.onError;
-            return chatSocket;
-        } catch(error){
-            console.error('WebSocket connection error:', error);
-        }
+    static connect(url) {
+        return new Promise((resolve, reject) => {
+            try {
+                const chatSocket = new WebSocket(url);
+                ChatManager.chatSocket = chatSocket;
+
+                chatSocket.onmessage = ChatManager.onMessage;
+                chatSocket.onclose = ChatManager.onClose;
+                chatSocket.onerror = ChatManager.onError;
+
+                // Resolve the promise once the WebSocket connection is open
+                chatSocket.onopen = () => {
+                    resolve(chatSocket);
+                };
+            } catch (error) {
+                console.error('WebSocket connection error:', error);
+                reject(error);
+            }
+        });
     }
 
     static closeConnection(){
@@ -89,53 +97,74 @@ class ChatManager {
     }
 
     /**
-     * 
-     * @param {object} data - data must have roomId,username,messege and receiver (in case of Personal Chat) .
+     * Sends a message over the WebSocket connection.
+     *
+     * @param {object} data - Data must have roomId, username, message, and receiver (in case of Personal Chat).
      */
-    static send(data){ 
-        
+    static send(data) {
         if (ChatManager.chatSocket.readyState === WebSocket.OPEN) {
-            // Set default values for roomid and username if not provided in the data
             data.roomid = data.roomId || ChatManager.roomId;
             data.username = data.username || ChatManager.username;
-            
-            // Send the message by converting data to JSON string
             ChatManager.chatSocket.send(JSON.stringify(data));
         } else {
-            // Log an error message to the console if the connection is not open
             console.error('WebSocket connection is not open.');
         }
     }
 
 
     /**
-     * Initialize the ChatManager and provide data need .
-     * 
-     * @param {object} data 
-     * @returns {WebSocket}
+     * Initializes the ChatManager and provides the required data.
+     *
+     * @param {object} data
      */
-    static init(data){
+    static init(data) {
         ChatManager.roomName = data.roomName || ChatManager.roomName;
         ChatManager.roomId = data.roomId || ChatManager.roomId;
         ChatManager.chatArea = data.chatArea || ChatManager.chatArea;
         ChatManager.username = data.username;
         ChatManager.privateRoom = data.privateRoom || ChatManager.privateRoom;
-        
-        return ChatManager.connect(data.url)
     }
 
-    static async getConversation(type,id){
-        
-        const url = (type =='user') ? `/api/direct/${id}/` : `/api/group/${id}/`;
+
+    /**
+     * Gets or creates a private room for the specified user ID.
+     *
+     * @param {string} user_id - User ID for the private room.
+     * @returns {Promise<object>} - Returns a promise resolving to the private room data.
+     */
+    static async getOrCreatePrivateRoom(user_id) {
+        const url = `/api/direct/get_or_create/${user_id}`;
         try {
             const data = await $j.ajax({
-                url:url,
-                method:"GET",
-                dataType:'json',
+                url: url,
+                method: 'GET',
+                dataType: 'json',
             });
             return data;
-        } catch(error){
+        } catch (error) {
             throw error;
         }
     }
+
+
+    /**
+    * Gets the conversation data for a given type and ID (user or group).
+    *
+    * @param {string} type - Type of the conversation (user or group).
+    * @param {string} id - ID of the user or group.
+    * @returns {Promise<object>} - Returns a promise resolving to the conversation data.
+    */
+   static async getConversation(type, id) {
+       const url = type === 'user' ? `/api/direct/${id}/` : `/api/group/${id}/`;
+       try {
+           const data = await $j.ajax({
+               url: url,
+               method: 'GET',
+               dataType: 'json',
+           });
+           return data;
+       } catch (error) {
+           throw error;
+       }
+   }
 }

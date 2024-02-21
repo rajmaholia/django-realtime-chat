@@ -2,9 +2,11 @@ from django.shortcuts import render , get_object_or_404 , redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse , HttpResponseBadRequest , HttpResponseServerError
+from django.db.models import Q 
+from django.views.decorators.csrf import csrf_exempt
 
-from .utils import get_or_create_private_room 
-from .models import GroupRoom , ChatUser 
+from .utils import get_or_create_private_room as utils_get_or_create_private_room, get_private_room
+from .models import GroupRoom , ChatUser  , PrivateRoom
 from .forms import ProfileForm
 
 # Create your views here.
@@ -12,11 +14,8 @@ User = get_user_model()
 
 @login_required
 def home(request):
-    users = User.objects.all()
-    group_rooms = GroupRoom.objects.all()
+    user = User.objects.get(username=request.user.username)
     context = {
-        'users':users,
-        'group_rooms':group_rooms
     }
     return render(request,'chat/home.html',context)
 
@@ -40,13 +39,28 @@ def settings(request):
     return render(request,'chat/settings.html',context)
 
 @login_required 
-def profile(request , chatuser_id):
-    user_object = ChatUser.objects.get(id=chatuser_id)
+def profile(request , username):
+    user = User.objects.get(username=username)
     context = {
-        'user_object':user_object
+        'user_object':user.chatuser
     }
     return render(request,'chat/profile.html',context)
 
+@login_required
+def group_detail(request,group_id):
+    group = get_object_or_404(GroupRoom , id=group_id)
+    member_count = group.members.count()
+    context = {'group':group,'member_count':member_count}
+    return render(request, 'chat/group_detail.html',context)
+    
+
+@login_required
+def group_edit(request , group_id):
+    group = get_object_or_404(GroupRoom , id=group_id)
+    if request.user not in group.admins:
+        return HttpResponseBadRequest('Permission Denied')
+    context = {}
+    return render(request, 'chat/group_edit.html',context)
 
 
 
@@ -61,8 +75,16 @@ def search(request):
 
 @login_required
 def get_my_rooms(request):
-    users = [{'name': user.username, 'type': 'user','profile_photo':user.chatuser.profile_photo.url,'id':user.id} for user in User.objects.all()]
-    groups = [{'name': group.name, 'type': 'group','logo':group.logo.url,'id':group.id} for group in GroupRoom.objects.all()]
+    user = request.user
+    private_rooms = PrivateRoom.objects.filter(Q(user1=user) | Q(user2=user))
+
+    private_rooms_users = []
+    for room in private_rooms:
+        other_user = room.user2 if user == room.user1 else room.user1
+        private_rooms_users.append(other_user)
+
+    users = [{'name': user.username, 'type': 'user','profile_photo':user.chatuser.profile_photo.url,'id':user.id} for user in private_rooms_users]
+    groups = [{'name': group.name, 'type': 'group','logo':group.logo.url,'id':group.id} for group in GroupRoom.objects.filter(members=user)]
 
     room_list = users + groups  
     room_count = len(room_list)
@@ -72,16 +94,22 @@ def get_my_rooms(request):
     }
     return JsonResponse(my_rooms)
 
-
 @login_required
 def get_private_chat(request,user_id):
     try:
-        user2 = get_object_or_404(User, id=user_id)
-        room = get_or_create_private_room(request.user, user2)
-        messages = room.messages.all()
+        print(user_id)
+        user2 = User.objects.get(id=user_id)
+
+        room = get_private_room(request.user, user2)
+        if not room: 
+            messages = []
+            room_id = None
+        else:
+            messages = room.messages.all()
+            room_id = str(room.id)
 
         context = {
-            'room_id': str(room.id),
+            'room_id': room_id,
             'messages': [
                 {
                     'id': str(message.id),
@@ -103,7 +131,20 @@ def get_private_chat(request,user_id):
     except Exception as e:
         return HttpResponseServerError(f'Server error: {str(e)}')
 
-    
+@login_required
+def get_or_create_private_room(request,user_id):
+    try : 
+        user2 = User.objects.get(id=user_id)
+        room = utils_get_or_create_private_room(request.user ,user2)
+        response = {
+            'room_id':room.id,
+            'users':[room.user1.username,room.user2.username]
+        }
+        return JsonResponse(response)
+
+    except:
+        return HttpResponseBadRequest('User not found')
+
 
 @login_required
 def get_group_chat(request,room_id):
@@ -134,3 +175,47 @@ def get_group_chat(request,room_id):
         return HttpResponseBadRequest(f'Group with ID {room.id} not found.')
     except Exception as e: 
         return HttpResponseServerError(f'Server error: {str(e)}')
+    
+@login_required
+@csrf_exempt
+def create_group(request):
+    if request.method=='POST':
+        try:
+            group_name = request.POST.get('group_name')
+            members = request.POST.getlist('group_members[]',[])
+            creator = request.user 
+            admins = [creator]
+            
+            group_room = GroupRoom.objects.create(name=group_name,creator=creator)
+            group_room.admins.set(admins)
+            group_room.members.set(members)
+
+            response_data = {
+                'id': str(group_room.id),
+                'name': group_room.name,
+                'logo': group_room.logo.url if group_room.logo else '',
+                'creator': group_room.creator.username,
+                'admins': [admin.username for admin in group_room.admins.all()],
+                'members': [member_name for member_name in group_room.members.values_list('username', flat=True)],
+                'created_at': group_room.created_at.isoformat(),
+            }
+
+            return JsonResponse(response_data, status=201)
+        
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+def get_my_friends(request):
+    user = request.user
+    private_rooms = PrivateRoom.objects.filter(Q(user1=user) | Q(user2=user))
+
+    friends = []
+    for room in private_rooms:
+        other_user = room.user2 if user == room.user1 else room.user1
+        friends.append(other_user)
+    
+
+    response = {
+        'friends':[{'user_id':friend.id,'username':friend.username,'profile_photo':friend.chatuser.profile_photo.url} for friend in friends]
+    }
+    return JsonResponse(response)

@@ -50,3 +50,24 @@
     - apply events like `socket.onmessage`, `socket.onclose` , `socket.onerror`.
     - To close the connection use `socket.close()` but this is better to check whether the connection is `OPEN`.
     - To check whether the connection is open use  `socket.readyState == WebSocket.OPEN`.
+
+4.Set related name in the models.
+    - just took the following example .
+    ```python
+    field1 = models.ForeignKey(User,related_name='test_name')
+    field2 = models.ForeignKey(User,related_name='test_name')
+    ```
+    - This will be an error , related name cannot be same for two different Foreignkey that uses the same model,
+    - Either change the related_name or remove from one ,
+    - Default related_name for the Relations is `<model_name>_set` in this case `User.<model_name>_set` .
+    - NOTE :  `User.test_name` can be used to refer only one model .
+    - just view these examples :
+
+     ```python
+     class Message(Model):
+         sender = models.ForeignKey(User,related_name='messages')
+    
+     class PrivateMessage(Model):
+         sender = models.ForeignKey(User, related_name='private_messages')
+         ```
+     related_name = 'messages' will be an error .
