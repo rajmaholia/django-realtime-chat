@@ -151,9 +151,10 @@ def get_group_chat(request,room_id):
     try:
         room = GroupRoom.objects.get(id=room_id)
         messages = room.messages.all()
-
+        is_member = True if request.user in room.members.all() else False
         context = {
             'room_id': str(room.id),
+            'room_type':'group',
             'room_name':room.name,
             'messages': [
                 {
@@ -165,7 +166,8 @@ def get_group_chat(request,room_id):
                 for message in messages
             ],
             'logo':room.logo.url,
-            'private_room':False
+            'private_room':False,
+            'is_member':is_member,
         }
 
         return JsonResponse(context)
@@ -187,7 +189,7 @@ def create_group(request):
             
             group_room = GroupRoom.objects.create(name=group_name,creator=creator)
             group_room.admins.set(admins)
-            group_room.members.set(members)
+            group_room.members.set(members+admins)
 
             response_data = {
                 'id': str(group_room.id),
@@ -203,6 +205,30 @@ def create_group(request):
         
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+@csrf_exempt
+def join_group(request):
+
+    if request.method=="POST":
+        try:
+            group_id = request.POST.get('group_id')
+            user = request.user 
+            group = GroupRoom.objects.get(id=group_id)
+            group.members.add(user)
+            return JsonResponse({'status':'success','message':f'you joined the group ID:{group_id} , NAME:{group.name}'})
+        
+        except GroupRoom.DoesNotExist:
+            return HttpResponseBadRequest('Group doesn\'t exists')
+        
+        except Exception as e:
+            return HttpResponseServerError('Internal Server Error : '+str(e))
+
+    else:
+        return HttpResponseBadRequest('Invalid request !')
+        
+
+
 
 def get_my_friends(request):
     user = request.user

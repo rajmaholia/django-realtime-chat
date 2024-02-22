@@ -63,11 +63,65 @@
     - NOTE :  `User.test_name` can be used to refer only one model .
     - just view these examples :
 
-     ```python
-     class Message(Model):
-         sender = models.ForeignKey(User,related_name='messages')
+    ```python
+    class Message(Model):
+        sender = models.ForeignKey(User,related_name='messages')
     
-     class PrivateMessage(Model):
-         sender = models.ForeignKey(User, related_name='private_messages')
-         ```
-     related_name = 'messages' will be an error .
+    class PrivateMessage(Model):
+        sender = models.ForeignKey(User, related_name='private_messages')
+    
+    //related_name = 'messages' will be an error .
+    ```
+
+5.Promise in javascript .
+    - Create Promise .
+    ```javascript
+    new Promise((resolve, reject)=> {
+        resolve(),
+        reject()
+    })
+    how to call this .
+    PromiseObj()
+    .then(data => {
+    })
+    .catch(error => {
+    })
+    ```
+    for example .
+    ```javascript
+    function connect(url) {
+        return new Promise((resolve, reject) => {
+            try {
+                const chatSocket = new WebSocket(url);
+                ChatManager.chatSocket = chatSocket;
+                chatSocket.onmessage = ChatManager.onMessage;
+                chatSocket.onclose = ChatManager.onClose;
+                chatSocket.onerror = ChatManager.onError;
+                // Resolve the promise once the WebSocket connection is open
+                chatSocket.onopen = () => {
+                    resolve(chatSocket);
+                };
+            } catch (error) {
+                console.error('WebSocket connection error:', error);
+                reject(error);
+            }
+        });
+    }
+    connect(url)
+    .then(chatSocket => {
+    })
+    .catch(error => {
+    })
+    ```
+
+6.Django(making code in async context)
+    - if some code is blocking the async way it will be an error during runtime .
+    - so you have to make the code async as follow :
+    ```python
+    user = User.objects.get(id=id)#error
+    user = await sync_to_async(User.objects.get)(id=id)
+    #or create a function like that :
+    @sync_to_async
+    def get_user(id):
+        return User.objects.get(id=id)
+    ```

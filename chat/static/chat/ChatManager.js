@@ -59,7 +59,7 @@ class ChatManager {
         }
         
         let chatHeader = ' '
-        if (!ChatManager.privateRoom){
+        if (!ChatManager.privateRoom &&  data.sender!=ChatManager.username){
             chatHeader = `<div class="card-header p-0 px-1 border-0 bg-transparent text-muted m-0 " style="font-size: 12px;">
                             ${data.sender}                   
                         </div>`
@@ -165,5 +165,19 @@ class ChatManager {
        } catch (error) {
            throw error;
        }
+   }
+
+   static async joinGroup(group_id){
+    const url = '/api/group/join/';
+    try {
+        const data = await $j.ajax({
+            url:url,
+            method:'POST',
+            data:{group_id:group_id}
+        })
+        return data ;
+    } catch(error){
+        throw error ;
+    }
    }
 }

@@ -5,7 +5,8 @@
 {% block content %}
 <div class="container-fluid cp-home-container p-0 m-0">
     <div class="row cp-home-row p-0 m-0">
-        <div class="col-md-5 col-sm-8 h-100 cp-home-left-bar p-0 m-0">
+
+        <div class="col-md-5 col-sm-6 h-100 cp-home-left-bar p-0 m-0">
             <nav class="navbar bg-primary p-1 m-0 cp-home-left-nav">
                 <a href="{% url 'chat:settings' %}" class="navbar-brand rounded-circle p-0 d-flex align-items-center " style="width:30px;height:30px;overflow:hidden">
                     <img src="{{user.chatuser.profile_photo.url}}" alt="img" style='object-fit:fill' class="img-fluid m-0 p-0 w-100 ">
@@ -33,7 +34,7 @@
             </div>
 
             <!-- Create Group popup -->
-            <div class=" cp-popup-full cp-home-popup-create-group">
+            <div class=" cp-popup-full cp-home-popup-create-group cp-hide">
                 <nav class="d-flex align-items-center bg-light cp-home-popup-create-group__nav m-0" style="height:50px">
                     <button class="btn btn-secondary cp-home-popup-create-group__cancel">
                         <i class="fa-solid fa-multiply"></i>
@@ -60,7 +61,7 @@
             </div>
         </div>
 
-        <div class="col-md-7 d-sm-block col-sm-4 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container">
+        <div class="col-md-7 d-sm-block col-sm-6 d-none p-0 m-0 h-100 cp-home-chatcontent cp-home-chatroom-container">
 
         </div>
     </div>
@@ -70,7 +71,7 @@
 {{user.username|json_script:'json_username'}}
 
 <!-- Include this script in your HTML template -->
-<script src="{% static 'chat/home.js' %}?v=25"></script>
+<script src="{% static 'chat/home.js' %}?v=41"></script>
 
 <script>
     class ActionCreate {
@@ -86,7 +87,6 @@
             })
 
             this.$cancelBtn.on('click',function(){
-                console.log('hello')
                 ActionCreate.hide();
             });
 
@@ -110,6 +110,7 @@
         }
         static loadList(){
             this.data.selectedMembers = [];
+            this.$elements.$userListEl.empty()
             ActionCreate.getMyFriends()
                 .then(data => {
                     for(const friend of data.friends) {
@@ -123,7 +124,6 @@
         }
 
         static async getMyFriends(){
-            console.log('...')
             const url = `/api/get_my_friends/`;
             try {
                 const data = await $j.ajax({
@@ -154,14 +154,15 @@
                 }
             });
 
+            
             this.$elements.$doneBtn.on('click',function(){
+                
                 let $input = ActionCreate.$elements.$groupNameInput;
                 if($input.val().trim().length == 0) {
                     $input.css('border-color','red')
                 } else {
                     let members = ActionCreate.data.selectedMembers;
                     let name = $input.val();
-                    console.log(members)
                     $j.ajax({
                             url:'/api/group/create/',
                             method:'POST',

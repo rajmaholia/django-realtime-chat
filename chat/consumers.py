@@ -2,10 +2,10 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async 
 import json 
 
+from django.utils.html import escape
 from django.contrib.auth import get_user_model
 
 from .models import GroupRoom , GroupMessage , PrivateRoom , PrivateMessage
-from .utils import get_or_create_private_room 
 
 User = get_user_model()
 
@@ -17,6 +17,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_id = kwargs['room_id']
             self.room_group_name = f'chat_{self.room_id}'
             self.is_private = False
+            room = await sync_to_async(GroupRoom.objects.get)(id=self.room_id)
+            user = await sync_to_async(User.objects.get)(username=self.scope['user'])
+            group_members = await sync_to_async(room.members.all)()
+            
+            is_member = await self.check_membership(user, group_members)
+            
+            
+
+            if not is_member:
+                await self.close(code=4000)
+
+
         else:
             room_id = kwargs['privateroom_id']
             self.is_private = True
@@ -44,6 +56,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender = data['username']
         message =  data['message']
         room_id = data['roomid']
+
+        message = escape(message)
 
         if self.is_private:
             receiver = data['receiver']
@@ -86,3 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room = PrivateRoom.objects.get(id=room)
     
         PrivateMessage.objects.create(sender=sender,receiver=receiver,room=room,content=message)
+
+    @sync_to_async
+    def check_membership(self ,user , group_members):
+        return user in group_members
