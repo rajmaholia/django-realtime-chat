@@ -1,6 +1,12 @@
 {% extends 'chat/_base.html' %}
 {% load static %}
 
+{% block localcss %}
+<style>
+
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
@@ -9,25 +15,29 @@
                 <div class="card-body d-flex justify-content-center align-items-center flex-column bg-secondary">
                     <div class="cp-group-detail__meta bg-light">
                         <!-- Group logo -->
-                        <figure style="width:200px;height:200px;overflow: hidden;border-radius: 50% ;" clas="d-flex align-items-center cp-group-detail__meta__logo">
+                        <figure style="max-width:500px;max-height:500px;overflow: hidden;border-radius: 50% ;" clas="d-flex align-items-center cp-group-detail__meta__logo">
                             <img src="{{group.logo.url}}" alt="logo" class="w-100 cp-group-detail__meta__logo__image" style="object-fit: cover;">
                         </figure>
 
                         <!-- Group name -->
-                        <div class="cp-group-detail__meta__name text-muted">
+                        <div class="cp-group-detail__meta__name text-muted text-center">
                             {{group.name}}
                         </div>
 
                         <!-- Group Memebers count -->
-                        <div class="cp-group-detail__meta__member-count text-muted">
+                        <div class="cp-group-detail__meta__member-count text-muted text-center">
                             {{member_count}} member{{member_count|pluralize:' ,s'}}
                         </div>
                     </div>
 
-                    <div class="cp-group-detail__members">
-                        <ul class="cp-group-detail__members__list">
+                    <div class="cp-group-detail__members w-100 mt-1">
+                        <ul class="cp-group-detail__members__list list-unstyled  ">
                             {% for member in group.members.all %}
-                            <li class="cp-group-detail__members__list__item">{{member.username}}</li>
+                                {% if member in group.admins.all %}
+                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light d-flex justify-content-between" data-member-id="{{member.id}}">{{member.username}} <span class=" d-block text-primary">admin</span></li>
+                                {% else %}
+                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light" data-member-id="{{member.id}}">{{member.username}}</li>
+                                {% endif %}
                             {% endfor %}
                         </ul>
                     </div>
@@ -37,4 +47,16 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+
+{% block localjs %}
+<script>
+    let $memberList = $j('.cp-group-detail__members__list');
+    $memberList.on('click','li',function(e){
+        let $target = $j(e.currentTarget);
+        let member_id = $target.data('member-id');
+        window.location.href = `/direct/${member_id}/`;
+    })
+</script>
 {% endblock %}

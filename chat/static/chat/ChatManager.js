@@ -20,7 +20,9 @@ class ChatManager {
                 ChatManager.chatSocket = chatSocket;
                 chatSocket.onmessage = ChatManager.onMessage;
                 chatSocket.onclose = ChatManager.onClose;
-                chatSocket.onerror = ChatManager.onError;
+                chatSocket.onerror = function(e){
+                    console.log(e)
+                }
 
                 // Resolve the promise once the WebSocket connection is open
                 chatSocket.onopen = () => {

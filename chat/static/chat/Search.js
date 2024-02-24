@@ -108,7 +108,9 @@ class Search {
                                 let user_or_room_id = (room_type == 'user') ? target.data('user-id') : target.data('room-id');//this is user id incase of private chat 
                                 let $chatContainer = $j(ChatArea.chatRoomContainer);
                                 let username = ChatArea.username;
-                                ChatArea.load({type:room_type,id:user_or_room_id},$chatContainer,username)
+
+                                let url_prefix = (room_type=='user') ? 'direct' : 'group';
+                                UrlRouter.visit(`/${url_prefix}/${user_or_room_id}/`)
             });
     }
 

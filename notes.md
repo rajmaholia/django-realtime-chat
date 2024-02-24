@@ -125,3 +125,23 @@
     def get_user(id):
         return User.objects.get(id=id)
     ```
+
+6.Django(if a list is sent using post)
+    - FRONTEND :  `<select multiple name="names[]"></select>`
+    - Or using AJAX `{method:"POST",data:{names:['name1','name2']}`
+    - BACKEND : `names = request.POST.getlist('names[]')`
+
+7.JavaScript:
+    - ```javascript
+        const defaultValue = 'Default';
+        // Your object
+        const obj = {
+            // Uncomment the line below to test with 'name' property
+            // name: 'John',
+            // Comment the line below to test with 'name' property
+            // name: null,
+        };
+        // Accessing the 'name' property with optional chaining
+        const result = obj?.name ?? defaultValue;
+        console.log(result); // Outputs 'Default' if 'name' is not present or its value if present
+    ```

@@ -38,7 +38,7 @@ class GroupMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.room.name}({self.sender.name} : {self.content})'
+        return f'{self.room.name}({self.sender.username} : {self.content})'
     
     class Meta: 
         ordering = ('created_at',)

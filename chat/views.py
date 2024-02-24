@@ -4,16 +4,18 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse , HttpResponseBadRequest , HttpResponseServerError
 from django.db.models import Q 
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.html import escape
 
 from .utils import get_or_create_private_room as utils_get_or_create_private_room, get_private_room
 from .models import GroupRoom , ChatUser  , PrivateRoom
-from .forms import ProfileForm
+from .forms import ProfileForm , GroupRoomForm
 
+    
 # Create your views here.
 User = get_user_model()
 
 @login_required
-def home(request):
+def home(request,**args):
     user = User.objects.get(username=request.user.username)
     context = {
     }
@@ -55,11 +57,21 @@ def group_detail(request,group_id):
     
 
 @login_required
-def group_edit(request , group_id):
-    group = get_object_or_404(GroupRoom , id=group_id)
-    if request.user not in group.admins:
+def group_edit(request, group_id):
+    group = get_object_or_404(GroupRoom, id=group_id)
+    if request.user not in group.admins.all():
         return HttpResponseBadRequest('Permission Denied')
-    context = {}
+    
+    if request.method == 'POST':
+        form = GroupRoomForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            return redirect('chat:group_detail', group_id=group_id)
+        
+    else:
+        form = GroupRoomForm(instance=group)
+
+    context = {'form': form, 'group': group}
     return render(request, 'chat/group_edit.html',context)
 
 
@@ -182,10 +194,18 @@ def get_group_chat(request,room_id):
 def create_group(request):
     if request.method=='POST':
         try:
-            group_name = request.POST.get('group_name')
+            group_name = escape(request.POST.get('group_name'))
             members = request.POST.getlist('group_members[]',[])
             creator = request.user 
             admins = [creator]
+
+            errors = {}
+            if len(group_name.strip()) == 0:
+                errors['group_name'] = 'This field is required'
+            if len(members) == 0:
+                errors['group_members'] = 'Add at least one member'
+            if len(errors) != 0:
+                return JsonResponse({'errors':errors},status=400)
             
             group_room = GroupRoom.objects.create(name=group_name,creator=creator)
             group_room.admins.set(admins)

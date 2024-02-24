@@ -1,0 +1,48 @@
+<!-- edit_group.html -->
+{% extends 'chat/_base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <div class="card p-1 mx-auto" style="max-width:576px">
+        <form method="post" action="" enctype="multipart/form-data" class="mt-4">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <figure style='max-width:576px;max-height:576px;overflow:hidden;'>
+                <img src="/media/{{form.logo.initial}}" alt="logo" class="w-100 h-100">
+            </figure>
+            <input type="file" name="" id="" class="form-control">
+            {{form.logo.errors}}
+        </div>
+        <div class="mb-3">
+            <label for="id_name" class="form-label fw-bold">Group Name</label>
+            <input type="text" class="form-control"  name="name" value="{{form.name.initial}}" maxlength="100" required id="id_name">
+            {{form.name.errors}}
+        </div>
+
+        <div class="mb-3 row g-2">
+            <div class="col-6">
+                <label for="id_members" class="form-label fw-bold">Members</label>
+                <select name="members" id="" style="height:200px" class="form-select cp-group-edit__members__select" multiple>
+                    {%for option in form.members %}
+                        {{option}}
+                    {% endfor %}
+                </select>
+                {{form.members.errors}}
+            </div>
+            <div class="col-6">
+                <label for="id_admins" class="form-label fw-bold">Admins</label>
+                <select name="admins" id="" class="form-select cp-group-edit__admins__select" style="height:200px" multiple>
+                    {%for option in form.admins %}
+                        {{option}}
+                    {% endfor %}
+                </select>
+                {{form.admins.errors}}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+  </div>
+{% endblock %}
