@@ -1,9 +1,16 @@
 $j(document).ready(function(){
-    const username = JSON.parse($j('#json_username').text());
+        const username = JSON.parse($j('#json_username').text());
         const $searchInput = $j('#cpHomeSearchInput');
         const $searchResults = $j('.cp-home-search-results-container');//same 
         const $chatRoomContainerEl = $j('.cp-home-chatroom-container');//right side 
+        const $friendnGroupList = $j('.cp-home-user-and-group-list-container');//same
         
+        UrlRouter.listen();
+
+
+        Home.init({$friendnGroupList:$friendnGroupList,$chatRoomContainerEl:$chatRoomContainerEl},{useename:username});
+        Home.load()
+
         //Intialize search handler 
         Search.init(
             {
@@ -27,5 +34,11 @@ $j(document).ready(function(){
             $container:$chatRoomContainerEl,
         },{
             username:username
-        });     
+        });   
+        
+        if(window.location.pathname != '/') 
+         {
+            UrlRouter.visit(window.location.pathname);
+         }
+
 })

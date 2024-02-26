@@ -1,45 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings | Django Chat</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+{% extends 'chat/_base.html' %}
 
-</head>
-<body>
+{% block localcss %}
+<style>
+    :root {
+        --photo-width:100%;
+        --photo-height:var(--photo-width)
+    }
+
+    .card {
+        max-width:540px
+    }
+    .cp-profile__profile-photo__container {
+        max-width:var(--photo-width);
+        max-height:450px !important;
+    }
+
+    .cp-profile__profile-photo {
+        position:relative;
+    }
+
+    .cp-profile__profile-photo__fullname__container {
+        position:absolute;
+        bottom:0%;
+        color:white;
+        font-size:2em;
+        font-weight:bold;
+    }
+
+    .cp-profile__message__btn {
+        position:absolute;
+        bottom:0%;
+        right:0%;
+        width:40px;
+        height:40px;
+    }
+</style>
+{% endblock %}
+{% block content %}
     <div class="container-fluid">
         <div class="row">
-            <nav class="navbar">
-                <a href="{% url 'chat:home' %}" class="navbar-brand">Go Back</a>
+            <nav class="navbar fixed-top ">
+                <a href="{% url 'chat:home' %}" class="navbar-brand btn btn-outline-primary bg-white">Go Back</a>
             </nav>
         </div>
-        <div class="row justify-content-center mt-3">
-            <div class="col-sm-6 card">
-                    <div class="mb-3">
+        <div class="row justify-content-center p-0">
+            <div class="col-sm-6 card p-0">
+                    <div class="mb-3 p-0 m-0 cp-profile__profile-photo">
                         <label for="profilePhoto" class="visually-hidden">Profile Photo</label>
-                        <div class="cp-profile-profile-photo d-flex align-items-center rounded-circle p-0 mx-auto mb-1" style="width:100px;height:100px;overflow:hidden">
-                            <img src="{{user_object.profile_photo.url}}" class='w-100 m-0' alt="profile_photo">
-                        </div>                        
-                    </div>
+                        <div class="cp-profile__profile-photo__container d-flex align-items-center p-0 mx-auto mb-1" style="overflow:hidden">
+                            <img src="{{user_object.chatuser.profile_photo.url}}" class='w-100 m-0 cp-profile__profile-photo__img' alt="profile_photo">
+                        </div> 
 
+                        {% if user_object.chatuser.fullname %}
+                        <div class="cp-profile__profile-photo__fullname__container">
+                            <label for="fullname" class=" visually-hidden">Full Name</label>
+                            <div  id="fullname">{{user_object.chatuser.fullname}}</div>                       
+                        </div>
+                        {% endif %}
+                        
+                        <button class="cp-profile__message__btn rounded-circle bg-primary d-flex align-items-center justify-content-center p-0">
+                            <i class="fa-solid fa-message cp-profile__message__icon" style="color:white"></i>
+                        </button>
+                    </div>
                     
-                    <div class="mb-3">
-                        <label for="fullname" class="">Full Name</label>
-                        <div  id="fullname">{{user_object.chatuser.fullname}}</div>                       
-                    </div>
+                    
 
                     <div class="mb-3">
-                        <label for="bio" class="form">Bio</label>
-                        <div id="bio" >{{user.chatuser.bio}}</div>
+                        <label for="info" class="fw-bold">Info</label>
+                        <div class="info__username">
+                            @{{user_object.username}}
+                        </div>
                     </div>
+
+                    {% if user_object.chatuse.bio %}
+                    <div class="mb-3">
+                        <label for="bio" class="fw-bold">Bio</label>
+                        <div id="bio" >{{user_object.chatuser.bio}}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if user_object.chatuser.friends.count %}
+                    <div class="mb-3 cp-profile__user-friends">
+                        <b>Friends</b>
+                        <ul class="cp-profile__user-friends__list list-unstyled p-0">
+                            {% for friend in friends %}
+                            <li class="cp-profile__user-friends__list__item p-2 rounded mb-1 bg-light" data-user-id="{{friend.id}}">{{friend.username}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
             </div>
         </div>
     </div>
+{% endblock content %}
 
-    
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+{% block localjs %}
+{{user_object.id|json_script:'json_profile_user_id'}}
+<script>
+    $j(document).ready(function(){
+        let profile_user_id_el = document.querySelector('#json_profile_user_id');
+        let profile_user_id;
+        
+        if(profile_user_id_el) {
+           profile_user_id = parseInt(profile_user_id_el.textContent);
+        }
 
-</body>
-</html>
+        const $friendList = $j('.cp-profile__user-friends__list');
+        $friendList.on('click','li',function(e){
+            let $target = $j(e.currentTarget);
+            let user_id = $target.data('user-id');
+            
+            if(user_id) window.location.href = `/direct/${user_id}/`;
+        });
+
+        const $messageBtn = $j('.cp-profile__message__btn');
+        $messageBtn.on('click',function(){
+            if(profile_user_id) {
+                window.location.href = `/direct/${profile_user_id}`;
+            }
+        })
+    })
+</script>
+{% endblock %}

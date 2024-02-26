@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.html import escape
 
+import json 
+
 from .utils import get_or_create_private_room as utils_get_or_create_private_room, get_private_room
 from .models import GroupRoom , ChatUser  , PrivateRoom
 from .forms import ProfileForm , GroupRoomForm
@@ -44,7 +46,8 @@ def settings(request):
 def profile(request , username):
     user = User.objects.get(username=username)
     context = {
-        'user_object':user.chatuser
+        'user_object':user,
+        'friends':user.chatuser.friends.all()
     }
     return render(request,'chat/profile.html',context)
 
@@ -55,24 +58,16 @@ def group_detail(request,group_id):
     context = {'group':group,'member_count':member_count}
     return render(request, 'chat/group_detail.html',context)
     
-
+# views.py
 @login_required
+@csrf_exempt
 def group_edit(request, group_id):
     group = get_object_or_404(GroupRoom, id=group_id)
     if request.user not in group.admins.all():
         return HttpResponseBadRequest('Permission Denied')
     
-    if request.method == 'POST':
-        form = GroupRoomForm(request.POST, instance=group)
-        if form.is_valid():
-            form.save()
-            return redirect('chat:group_detail', group_id=group_id)
-        
-    else:
-        form = GroupRoomForm(instance=group)
-
-    context = {'form': form, 'group': group}
-    return render(request, 'chat/group_edit.html',context)
+    context = {'group': group}
+    return render(request, 'chat/group_edit.html', context)
 
 
 
@@ -146,15 +141,21 @@ def get_private_chat(request,user_id):
 def get_or_create_private_room(request,user_id):
     try : 
         user2 = User.objects.get(id=user_id)
-        room = utils_get_or_create_private_room(request.user ,user2)
+        room , created = utils_get_or_create_private_room(request.user ,user2)
+        if created:
+            user2.chatuser.friends.add(request.user)
+            request.user.chatuser.friends.add(user2)
         response = {
             'room_id':room.id,
             'users':[room.user1.username,room.user2.username]
         }
         return JsonResponse(response)
 
-    except:
+    except User.DoesNotExist:
         return HttpResponseBadRequest('User not found')
+    except Exception as e:
+        return HttpResponseServerError(f'Server error: {str(e)}')
+    
 
 
 @login_required
@@ -248,7 +249,51 @@ def join_group(request):
         return HttpResponseBadRequest('Invalid request !')
         
 
-
+@login_required
+@csrf_exempt
+def edit_group_api(request,group_id):
+    try:
+        group = GroupRoom.objects.get(id=group_id)
+        if request.method == 'POST':
+            form = GroupRoomForm(request.POST,request.FILES,group)
+            if form.is_valid():
+                cleaned_data = form.cleaned_data
+                group.name = cleaned_data['name']
+                group.description = cleaned_data['description']
+                group.logo = cleaned_data['logo']
+                group.members.set(cleaned_data['members'])
+                group.admins.set(cleaned_data['admins'])
+                group.save()
+            else:
+                errors_json = form.errors.as_json()
+                errors = json.loads(errors_json)
+                return JsonResponse({'errors':errors})
+        
+            return JsonResponse({'status':'success'})
+            
+            
+        else:
+            group_admins = group.admins.all()
+            response = {
+                'group':{
+                    'logo':group.logo.url,
+                    'name':group.name,
+                    'description':group.description,
+                    'members':[
+                        {
+                            'id':member.id,
+                            'name':member.username,
+                            'profile_photo':member.chatuser.profile_photo.url,
+                            'is_admin':member in group_admins
+                        } for member in group.members.all()
+                    ]
+                }
+            }
+            return JsonResponse(response)
+    except GroupRoom.DoesNotExist:
+            return HttpResponseBadRequest('Group Does not exists.')
+    # except Exception as e:
+    #     return HttpResponseServerError('Internal Server Error : ' + str(e))
 
 def get_my_friends(request):
     user = request.user

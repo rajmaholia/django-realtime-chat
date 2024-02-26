@@ -28,19 +28,35 @@
                         <div class="cp-group-detail__meta__member-count text-muted text-center">
                             {{member_count}} member{{member_count|pluralize:' ,s'}}
                         </div>
+                        
+                        {% if user in group.admins.all %}
+                        <div class="cp-group-detail__edit rounded-circle" >
+                            <a href="{% url 'chat:group_edit' group.id %}" class="btn btn-secondary rounded-circle d-block ms-auto" style="width:40px;height:40px"><i class="fa-solid fa-pen"></i></a>
+                        </div>
+                        {% endif %}
                     </div>
 
+                    {% if group.description %}
+                    <div class="my-2 bg-white p-1 rounded">
+                        <div class="fw-bold">Description</div>
+                        <div class="group-description">{{group.description}}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if group.members.count %}
                     <div class="cp-group-detail__members w-100 mt-1">
+                        <div class="fw-bold">Members</div>
                         <ul class="cp-group-detail__members__list list-unstyled  ">
                             {% for member in group.members.all %}
                                 {% if member in group.admins.all %}
-                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light d-flex justify-content-between" data-member-id="{{member.id}}">{{member.username}} <span class=" d-block text-primary">admin</span></li>
+                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light d-flex" data-member-id="{{member.id}}"><figure style="width:30px;height:30px;overflow: hidden;" class="p-0 m-0 d-flex align-items-center rounded-circle"><img src="{{member.chatuser.profile_photo.url}}" class="w-100" alt="profile_photo"></figure> <span>{{member.username}}</span> <span class=" d-block text-primary ms-auto">admin</span></li>
                                 {% else %}
-                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light" data-member-id="{{member.id}}">{{member.username}}</li>
+                                <li class="cp-group-detail__members__list__item p-2 rounded mb-1 bg-light d-flex" data-member-id="{{member.id}}"><figure style="width:30px;height:30px;overflow: hidden;" class="p-0 m-0 d-flex align-items-center rounded-circle"><img src="{{member.chatuser.profile_photo.url}}" class="w-100" alt="profile_photo"></figure> <span>{{member.username}}</span></li>
                                 {% endif %}
                             {% endfor %}
                         </ul>
                     </div>
+                    {% endif %}
 
                 </div>
             </div>
@@ -52,11 +68,15 @@
 
 {% block localjs %}
 <script>
+
+   
     let $memberList = $j('.cp-group-detail__members__list');
     $memberList.on('click','li',function(e){
         let $target = $j(e.currentTarget);
         let member_id = $target.data('member-id');
         window.location.href = `/direct/${member_id}/`;
     })
+
+
 </script>
 {% endblock %}

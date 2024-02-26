@@ -13,6 +13,7 @@ class ChatArea {
                 let room_type = obj.type ;
                 let room_or_user_id  = obj.id;
                 let $container =  this.$elements.$container;
+                let username = this.data.username;
 
                 ChatManager.getConversation(room_type,room_or_user_id)
                     .then(data => {
@@ -130,6 +131,7 @@ class ChatArea {
                         //Back btn 
                         let $btnBack = $j('.cp-home-chatroom-top-navigation__btn-back');
                         $btnBack.on('click',function(){
+                            UrlRouter.visit('/');
                             $container[0].classList.remove('cp-place-left-on-sm')
                         });
                         
@@ -226,7 +228,7 @@ class ChatArea {
             let textStyles = 'text-dark';
             let header = '';
             
-            if(ChatArea.username == message.sender) {
+            if(ChatArea.data.username == message.sender) {
                 offset = 'justify-content-end';
                 textStyles = 'bg-primary text-white';
                 header = '';
@@ -255,7 +257,7 @@ class ChatArea {
             let offset = '';
             let textStyles = 'text-dark';
             
-            if(ChatArea.username == message.sender) {
+            if(ChatArea.data.username == message.sender) {
                 offset = 'justify-content-end';
                 textStyles = 'bg-primary text-white';
             }

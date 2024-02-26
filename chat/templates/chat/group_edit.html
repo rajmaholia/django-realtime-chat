@@ -2,47 +2,202 @@
 {% extends 'chat/_base.html' %}
 
 {% block content %}
-  <div class="container mt-5">
+  <div class="container px-1 m-0 p-0">
+    <nav class="navbar fixed-top p-0">
+        <a href="{% url 'chat:group_detail' group.id %}" class="navbar-brand "><i class="fas fa-arrow-left"></i></a>
+    </nav>
     <div class="card p-1 mx-auto" style="max-width:576px">
-        <form method="post" action="" enctype="multipart/form-data" class="mt-4">
+        <form method="post" enctype="multipart/form-data" class="mt-4 cp-group-edit__form">
         {% csrf_token %}
         
         <div class="mb-3">
             <figure style='max-width:576px;max-height:576px;overflow:hidden;'>
-                <img src="/media/{{form.logo.initial}}" alt="logo" class="w-100 h-100">
+                <img src="" alt="logo" class="w-100 h-100 cp-group-edit__initial-logo">
             </figure>
-            <input type="file" name="" id="" class="form-control">
-            {{form.logo.errors}}
+            <label for="id_logo" class="visually-hidden">Group Logo</label>
+            <input type="file" name="logo" id="id_logo" class="form-control">
+            <ul class="errorlist" id="error_id_logo"></ul>        
         </div>
+
         <div class="mb-3">
             <label for="id_name" class="form-label fw-bold">Group Name</label>
             <input type="text" class="form-control"  name="name" value="{{form.name.initial}}" maxlength="100" required id="id_name">
-            {{form.name.errors}}
+            <ul class="errorlist" id="error_id_name"></ul>        
+
+        </div>
+
+        <div class="mb-3">
+            <label for="id_description" class="form-label fw-bold">Description</label>
+            <textarea name="description" class="form-control" id="id_description" cols="30" rows="2">{{form.description.initial}}</textarea>
+            <ul class="errorlist" id="error_id_description"></ul>        
+
         </div>
 
         <div class="mb-3 row g-2">
-            <div class="col-6">
+            <div class="col">
                 <label for="id_members" class="form-label fw-bold">Members</label>
-                <select name="members" id="" style="height:200px" class="form-select cp-group-edit__members__select" multiple>
-                    {%for option in form.members %}
-                        {{option}}
-                    {% endfor %}
-                </select>
-                {{form.members.errors}}
-            </div>
-            <div class="col-6">
-                <label for="id_admins" class="form-label fw-bold">Admins</label>
-                <select name="admins" id="" class="form-select cp-group-edit__admins__select" style="height:200px" multiple>
-                    {%for option in form.admins %}
-                        {{option}}
-                    {% endfor %}
-                </select>
-                {{form.admins.errors}}
+                <ul name="members" id="id_members" style="height:200px" class="form-select cp-group-edit__members__select list-unstyled" multiple>
+                    
+                </ul>
+                <ul class="errorlist" id="error_id_members"></ul> 
+                <ul class="errorlist" id="error_id_admins"></ul>        
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type='button' class="btn btn-primary cp-group-edit__submit-form">Save Changes</button>
         </form>
     </div>
   </div>
+{% endblock %}
+
+
+{% block localjs %}
+{{group.id|json_script:'json_group_id'}}
+<script>
+    let $groupIdEl = $j('#json_group_id');
+    let group_id = JSON.parse($groupIdEl.text());
+
+    
+
+    $j(document).ready(function(){
+
+        let editedData = {
+            members:[],
+            admins:[]
+        }
+
+        let $logoInput = $j('#id_logo');
+        let $nameInput = $j('#id_name');
+        let $descriptionInput = $j('#id_description');
+        let $initialLogo = $j('.cp-group-edit__initial-logo');
+        let $membersUl = $j('.cp-group-edit__members__select');
+
+
+        function load($elements,data){
+            const group_id = data.group_id;
+            getGroupData(group_id)
+                .then(response => {
+                    $elements.$initialLogo.attr('src',response.group.logo);
+                    $elements.$nameInput.val(response.group.name);
+                    $elements.$descriptionInput.val(response.group.description);
+                    
+                    let members = response.group.members;
+                    editedData.members = members.map((member)=>member.id);
+                    editedData.admins = members
+                                        .filter(member => member.is_admin == true)
+                                        .map(member => member.id);
+
+                    for(const member of members){
+                        let adminStatus = (member.is_admin) ? 'fa-solid' : 'fa-regular';
+                        let $item = $j(`<li class="cp-group-edit__members__list__item p-1 mb-1 rounded bg-primary text-white d-flex justify-content-between">
+                                        <span>${member.name}</span>    
+                                        <div class="cp-group-edit__members__actions">
+                                            <span class="me-1 admin-status"><i class="${adminStatus} fa-star"></i></span>  
+                                            <span class=""><i class="fa-solid fa-trash"></i></span>
+                                        </div>
+                                    </li>`);
+                        let $trashIcon = $item.find('.fa-trash');
+                        let $starIcon = $item.find('.fa-star');
+
+                        $elements.$membersUl.append($item);
+
+                        $trashIcon.on('click',function(){
+                            $item.remove();
+                            let index = editedData.members.indexOf(member.id);
+                            editedData.members.splice(index,1);
+                            
+                            if(editedData.admins.includes(member.id)) {
+                                let a_index = editedData.admins.indexOf(member.id);
+                                editedData.admins.splice(a_index,1);
+                            }
+                        });
+
+                        $starIcon.on('click',function(){
+                            $j(this)[0].classList.toggle('fa-solid')
+                            $j(this)[0].classList.toggle('fa-regular')
+
+                            if(editedData.admins.includes(member.id)){
+                                let a_index = editedData.admins.indexOf(member.id);
+                                editedData.admins.splice(a_index,1);
+                            } else {
+                                editedData.admins.push(member.id);
+                            }
+
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                })
+        }
+
+        function getGroupData(group_id){
+            const url = `/api/group/${group_id}/edit/`;
+            try {
+                const data = $j.ajax({
+                    url:url,
+                    method:'GET',
+                    dataType:'json'
+                });
+                return data;
+            }
+            catch(error){
+                throw error;
+            }
+        }
+   
+        load({
+            $logoInput:$j('#id_logo'),
+            $nameInput:$j('#id_name'),
+            $descriptionInput:$j('#id_description'),
+            $initialLogo:$j('.cp-group-edit__initial-logo'),
+            $membersUl:$j('.cp-group-edit__members__select')
+        },{
+            group_id:group_id
+        });
+
+        let $btnSubmit = $j('.cp-group-edit__submit-form');
+        let $form = $j('.cp-group-edit__form');
+        
+        $btnSubmit.on('click',function(){
+            let formData = new FormData($form[0]);
+            formData.append('name',$nameInput.val());
+            formData.append('description',$descriptionInput.val());
+            formData.append('logo',$logoInput[0].files[0]);
+            
+            editedData.members.forEach(member => {
+                formData.append('members',member);
+            });
+
+            editedData.admins.forEach(admin => {
+                formData.append('admins',admin);
+            })
+            postData(formData)
+        })
+
+        function postData(formData){
+            fetch(`/api/group/${group_id}/edit/`,{
+                method:"POST",
+                body:formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.errors) {
+                    for(const field_errors in data.errors){
+                        let $errorListEl = $j(`#error_id_${field_errors}`);
+                        $errorListEl.empty();
+                        
+                        data.errors[field_errors].forEach(error => {
+                            $errorListEl.append(`<li>${error.message}</li>`)
+                        })
+                        
+                    }
+                } else if(data.status == 'success') {
+                    window.location.reload()
+
+                }
+            })
+        }
+    });
+</script>
 {% endblock %}

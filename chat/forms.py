@@ -4,7 +4,7 @@ from .models import ChatUser , GroupRoom
 class GroupRoomForm(forms.ModelForm):
     class Meta:
         model = GroupRoom
-        fields = ['name', 'logo', 'members','admins'] 
+        fields = ['name', 'logo','description' ,'members','admins'] 
 
 class ProfileForm(forms.ModelForm):
     class Meta:

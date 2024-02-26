@@ -22,6 +22,7 @@
         body {
             background-image: url('/static/chat/assets/images/chatroom-background.jpg');
             background-size: cover;
+            background-attachment: fixed;               
         }
         
         .cp-room-row {
@@ -233,12 +234,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
-<script src="{% static 'chat/UrlRouter.js' %}"></script>
-<script src="{% static 'chat/ChatArea.js' %}"></script>
+<script src="{% static 'chat/UrlRouter.js' %}?v=8"></script>
+<script src="{% static 'chat/ChatArea.js' %}?v=4"></script>
 <script src="{% static 'chat/Search.js' %}?v=10"></script>
 <script src="{% static 'chat/ActionCreate.js' %}"></script>
-
-<script src="{% static 'chat/init.js' %}"></script>
+<script src="{% static 'chat/Home.js' %}?v=49"></script>
+<script src="{% static 'chat/init.js' %}?v=1"></script>
 
 <script src="{% static 'chat/ChatManager.js' %}?v=20"></script>
 

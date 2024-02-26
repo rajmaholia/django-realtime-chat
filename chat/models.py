@@ -27,6 +27,7 @@ class GroupRoom(models.Model):
     admins = models.ManyToManyField(User)
     created_at = models.DateTimeField(auto_now_add=True)
     members = models.ManyToManyField(User,related_name='group_rooms')
+    description = models.CharField(max_length=255,default='')
 
     def __str__(self):
         return self.name 
